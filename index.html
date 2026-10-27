@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>急診住院醫師臨床模擬遊戲 2D | ER Resident Clinical Simulator</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- 頂部戰情指揮導覽列 (HUD) -->
+  <header class="top-hud">
+    <div class="brand-box">
+      <span class="er-cross-badge">ER SIM 2D</span>
+      <h1>急診醫學臨床決策模擬系統 (TTAS / ACLS / ATLS / OSCE)</h1>
+    </div>
+
+    <div class="hud-stats">
+      <div class="stat-pill">🕒 值班時間 <strong id="hud-clock">08:00</strong></div>
+      <div class="stat-pill">🏥 急診動態 <strong id="hud-active-count">3 床待處置</strong></div>
+      <div class="stat-pill">🏆 臨床積分 <strong id="hud-score">0</strong></div>
+    </div>
+
+    <div class="hud-controls">
+      <label for="case-selector" style="font-size:12px;color:#94a3b8;">切換經典教案：</label>
+      <select id="case-selector" class="case-select-dropdown"></select>
+      <button class="hud-btn hint-btn" onclick="showAttendingHint()">👨‍⚕️ 請教陳主治醫師 (臨床指引提示)</button>
+      <button id="audio-toggle-btn" class="hud-btn">🔇 監視器音效：關</button>
+    </div>
+  </header>
+
+  <!-- 病床快速檢視與切換列 -->
+  <section class="patient-queue-section">
+    <span class="queue-label">📋 急診在院病床 (點擊卡片直接前往床邊處置)：</span>
+    <div id="patient-cards-bar" class="patient-cards-bar"></div>
+  </section>
+
+  <!-- 2D 俯視角急診室主舞台 -->
+  <main class="stage-wrapper">
+    <div class="map-container">
+      <canvas id="er-map-canvas" width="1050" height="520"></canvas>
+    </div>
+    <div class="map-controls-footer">
+      <span>🕹️ <strong>移動操作：</strong>鍵盤 <strong>W / A / S / D</strong> 或 <strong>方向鍵</strong>，亦可直接<strong>滑鼠點擊地板或病床</strong>自動走過去</span>
+      <span>🩺 <strong>進入床邊處置：</strong>靠近病床按 <strong>[E]</strong> 鍵，或直接<strong>點擊病床 / 上方病患卡片</strong></span>
+      <span>💡 <strong>主治醫師教學：</strong>點擊護理站「陳主治醫師 (VS)」或右上角按鈕可獲得標準 ACLS/ATLS/Sepsis 提示</span>
+    </div>
+  </main>
+
+  <!-- 床邊臨床處置工作站 Modal -->
+  <div id="bedside-modal" class="modal-overlay hidden">
+    <div class="bedside-workstation">
+      <div class="bs-topbar">
+        <div class="bs-pt-info">
+          <span id="bs-bed-badge" class="bs-badge">RESUS-1 | TTAS 第 1 級</span>
+          <h2 id="bs-pt-title">陳建國 (62歲 男) — 急性下壁心肌梗塞合併右心室梗塞</h2>
+          <p id="bs-pt-cc">【到院主訴】突發胸口劇烈壓迫痛2小時，冒冷汗</p>
+        </div>
+        <div class="bs-top-actions">
+          <button class="hud-btn hint-btn" onclick="showAttendingHint()">💡 主治醫師臨床提示</button>
+          <button class="close-modal-btn" onclick="closeBedsideModal()">✕ 返回 2D 急診室 (ESC)</button>
+        </div>
+      </div>
+
+      <div class="bs-main-grid">
+        <!-- 左欄：即時生理監視器 (Patient Monitor) 與處置紀錄 -->
+        <aside class="bs-left-monitor-col">
+          <div class="philips-monitor">
+            <div class="monitor-header">
+              <span>INTELLIVUE ER-MONITOR</span>
+              <span>ADULT / STAT MODE</span>
+            </div>
+            <canvas id="bedside-wave-canvas" width="335" height="135"></canvas>
+            <div class="vitals-readout-grid">
+              <div class="vital-box vital-hr">
+                <div class="vital-label">HR (bpm)</div>
+                <div id="mon-hr" class="vital-num">58</div>
+              </div>
+              <div class="vital-box vital-bp">
+                <div class="vital-label">NIBP (mmHg)</div>
+                <div id="mon-bp" class="vital-num">96/62</div>
+                <div id="mon-map" class="vital-sub">(MAP 73)</div>
+              </div>
+              <div class="vital-box vital-spo2">
+                <div class="vital-label">SpO₂ (%)</div>
+                <div id="mon-spo2" class="vital-num">95%</div>
+              </div>
+              <div class="vital-box vital-rr">
+                <div class="vital-label">RESP (rpm)</div>
+                <div id="mon-rr" class="vital-num">20</div>
+              </div>
+            </div>
+            <div id="mon-bt" class="vital-footer-bar">36.4°C | GCS E4V5M6 (15)</div>
+          </div>
+
+          <div id="bs-checklist-progress"></div>
+
+          <div class="bs-logs-box">
+            <h5>📝 病歷與醫囑即時紀錄 (Clinical Log)</h5>
+            <div id="bs-action-logs"></div>
+          </div>
+        </aside>
+
+        <!-- 右欄：臨床評估、心電圖/超音波、檢驗報告、醫囑開立 (CPOE) -->
+        <section class="bs-right-clinical-col">
+          <nav class="clin-tabs-nav">
+            <button class="clin-tab-btn active" data-tab="tab_assess" onclick="switchClinicalTab('tab_assess')">
+              1️⃣ 問診與理學檢查 (SAMPLE / ABCDE)
+            </button>
+            <button class="clin-tab-btn" data-tab="tab_ecg_pocus" onclick="switchClinicalTab('tab_ecg_pocus')">
+              2️⃣ 12導程心電圖 & 床邊超音波 (ECG / POCUS)
+            </button>
+            <button class="clin-tab-btn" data-tab="tab_labs" onclick="switchClinicalTab('tab_labs')">
+              3️⃣ 抽血檢驗與電腦斷層 (Labs / ABG / CT)
+            </button>
+            <button class="clin-tab-btn" data-tab="tab_orders" onclick="switchClinicalTab('tab_orders')">
+              4️⃣ 醫囑處置、給藥與收治動向 (CPOE Orders)
+            </button>
+          </nav>
+
+          <div id="clin-tab-body" class="clin-tab-body"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- OSCE 考官復盤與結算 Modal -->
+  <div id="debrief-modal" class="modal-overlay hidden">
+    <div id="debrief-content" class="debrief-card"></div>
+  </div>
+
+  <!-- 浮動臨床提示 / 警報通知 Toast -->
+  <div id="clinical-toast" class="clinical-toast hidden"></div>
+
+  <script src="js/cases.js"></script>
+  <script src="js/monitor_and_imaging.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

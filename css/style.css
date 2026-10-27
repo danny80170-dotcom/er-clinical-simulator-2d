@@ -1,0 +1,907 @@
+:root {
+  --bg-dark: #060b14;
+  --panel-bg: #0f172a;
+  --panel-border: #1e293b;
+  --accent-blue: #38bdf8;
+  --accent-green: #22c55e;
+  --accent-red: #ef4444;
+  --accent-amber: #f59e0b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans TC", "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* 頂部戰情指揮導覽列 (HUD) */
+.top-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 10px 20px;
+  background: linear-gradient(90deg, #09101f 0%, #111c33 100%);
+  border-bottom: 2px solid #1e293b;
+}
+
+.brand-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.er-cross-badge {
+  background: #dc2626;
+  color: #fff;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+.brand-box h1 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  background: #1e293b;
+  border: 1px solid #334155;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stat-pill strong {
+  color: var(--accent-blue);
+  font-family: monospace;
+  font-size: 15px;
+  margin-left: 4px;
+}
+
+.hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.case-select-dropdown {
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #38bdf8;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hud-btn {
+  background: #1e293b;
+  color: #f8fafc;
+  border: 1px solid #475569;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hud-btn:hover {
+  background: #334155;
+  border-color: #38bdf8;
+}
+
+.hud-btn.hint-btn {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: #f59e0b;
+  color: #fde68a;
+}
+
+.hud-btn.hint-btn:hover {
+  background: rgba(245, 158, 11, 0.32);
+}
+
+/* 病床快速檢視列 */
+.patient-queue-section {
+  background: #0b1324;
+  padding: 8px 20px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+}
+
+.queue-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.patient-cards-bar {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+}
+
+.pt-mini-card {
+  background: #131e36;
+  border: 1px solid #334155;
+  border-left: 4px solid #ef4444;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 245px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.pt-mini-card:hover,
+.pt-mini-card.active-card {
+  transform: translateY(-2px);
+  border-color: #38bdf8;
+  background: #192746;
+}
+
+.pt-mini-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.bed-badge {
+  color: #38bdf8;
+}
+
+.ttas-badge {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.pt-mini-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.pt-mini-cc {
+  font-size: 11px;
+  color: #94a3b8;
+  margin: 2px 0;
+}
+
+.pt-mini-vitals {
+  font-size: 11px;
+  font-family: monospace;
+  color: #4ade80;
+  font-weight: 700;
+}
+
+/* 2D 急診室主舞台 */
+.stage-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 20px;
+  position: relative;
+}
+
+.map-container {
+  position: relative;
+  border: 2px solid #334155;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65);
+  background: #0b1120;
+}
+
+#er-map-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+.map-controls-footer {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #94a3b8;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.map-controls-footer span strong {
+  color: #38bdf8;
+}
+
+/* 床邊臨床處置工作站 Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.84);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.bedside-workstation {
+  width: 100%;
+  max-width: 1240px;
+  max-height: 93vh;
+  background: #0b1222;
+  border: 2px solid #334155;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+}
+
+.bs-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: #131e36;
+  border-bottom: 1px solid #334155;
+}
+
+.bs-pt-info h2 {
+  font-size: 18px;
+  color: #f8fafc;
+  margin-top: 2px;
+}
+
+.bs-pt-info p {
+  font-size: 13px;
+  color: #cbd5e1;
+  margin-top: 2px;
+}
+
+.bs-badge {
+  background: #dc2626;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.bs-top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.close-modal-btn {
+  background: #334155;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.close-modal-btn:hover {
+  background: #ef4444;
+}
+
+/* 床邊主版面：左側生理監視器與紀錄 + 右側臨床分頁 */
+.bs-main-grid {
+  display: grid;
+  grid-template-columns: 365px 1fr;
+  flex: 1;
+  overflow: hidden;
+}
+
+.bs-left-monitor-col {
+  background: #050912;
+  border-right: 1px solid #1e293b;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.philips-monitor {
+  background: #020617;
+  border: 2px solid #334155;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.monitor-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: monospace;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+#bedside-wave-canvas {
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid #1e293b;
+  margin-bottom: 8px;
+}
+
+.vitals-readout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.vital-box {
+  background: rgba(15, 23, 42, 0.7);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid;
+}
+
+.vital-hr {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.vital-bp {
+  border-color: #ef4444;
+  color: #f87171;
+}
+
+.vital-spo2 {
+  border-color: #06b6d4;
+  color: #22d3ee;
+}
+
+.vital-rr {
+  border-color: #facc15;
+  color: #fde047;
+}
+
+.vital-label {
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.vital-num {
+  font-size: 22px;
+  font-weight: 900;
+  font-family: monospace;
+}
+
+.vital-sub {
+  font-size: 11px;
+  font-family: monospace;
+}
+
+.vital-footer-bar {
+  margin-top: 6px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #e2e8f0;
+  text-align: center;
+  background: #0f172a;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+/* 核心指標進度與醫療紀錄 Log */
+.progress-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 4px;
+}
+
+.progress-bar-bg {
+  height: 8px;
+  background: #1e293b;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #38bdf8, #22c55e);
+  transition: width 0.25s ease;
+}
+
+.bs-logs-box {
+  flex: 1;
+  background: #09101d;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 8px;
+  overflow-y: auto;
+  max-height: 220px;
+}
+
+.bs-logs-box h5 {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.log-entry {
+  font-size: 12px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.log-time {
+  font-family: monospace;
+  opacity: 0.75;
+  margin-right: 4px;
+}
+
+.log-info {
+  background: rgba(56, 189, 248, 0.08);
+  color: #e2e8f0;
+}
+
+.log-success {
+  background: rgba(34, 197, 94, 0.16);
+  color: #86efac;
+  border-left: 3px solid #22c55e;
+}
+
+.log-warn {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fde68a;
+  border-left: 3px solid #f59e0b;
+}
+
+.log-danger {
+  background: rgba(239, 68, 68, 0.22);
+  color: #fca5a5;
+  border-left: 3px solid #ef4444;
+  font-weight: 700;
+}
+
+/* 右側臨床工作分頁 */
+.bs-right-clinical-col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.clin-tabs-nav {
+  display: flex;
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  padding: 0 12px;
+  gap: 6px;
+}
+
+.clin-tab-btn {
+  background: transparent;
+  color: #94a3b8;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.clin-tab-btn:hover {
+  color: #f8fafc;
+}
+
+.clin-tab-btn.active {
+  color: #38bdf8;
+  border-bottom-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.clin-tab-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.assess-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.assess-panel,
+.ecg-box,
+.pocus-box {
+  background: #111c33;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.panel-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.action-Trigger-btn {
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  padding: 7px 13px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.action-Trigger-btn:hover {
+  background: #0369a1;
+}
+
+.clinical-data-list p {
+  margin-bottom: 9px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.highlight-quote {
+  color: #fde047;
+  font-weight: 600;
+}
+
+.warn-text {
+  color: #fca5a5;
+  font-weight: 600;
+}
+
+.locked-placeholder {
+  padding: 28px 18px;
+  text-align: center;
+  color: #64748b;
+  border: 1px dashed #334155;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* 12-Lead ECG & POCUS */
+.ecg-pocus-wrapper {
+  display: grid;
+  grid-template-columns: 1.7fr 1fr;
+  gap: 14px;
+}
+
+#ecg-12lead-canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+
+.ecg-teaching-banner {
+  margin-top: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border-left: 4px solid #ef4444;
+  padding: 8px 12px;
+  font-size: 12.5px;
+  color: #fecaca;
+  line-height: 1.45;
+}
+
+#pocus-live-canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #334155;
+}
+
+.pocus-finding-text {
+  margin-top: 8px;
+  font-size: 12.5px;
+  color: #bae6fd;
+  line-height: 1.45;
+}
+
+/* 抽血與影像報告 */
+.labs-action-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.labs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.lab-card {
+  background: #111c33;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.lab-card h5 {
+  color: #38bdf8;
+  font-size: 13px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 4px;
+}
+
+.lab-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(51, 65, 85, 0.4);
+}
+
+.lab-v {
+  font-family: monospace;
+  font-weight: 700;
+}
+
+.lab-crit {
+  color: #f87171;
+}
+
+/* 醫囑處置按鈕群 (CPOE) */
+.cpoe-sections {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.cpoe-col h4 {
+  font-size: 14px;
+  color: #38bdf8;
+  margin-bottom: 10px;
+}
+
+.disp-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.cpoe-btn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cpoe-order-btn {
+  background: #131f38;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 9px 11px;
+  text-align: left;
+  color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.14s ease;
+}
+
+.cpoe-order-btn:hover {
+  background: #1e2f52;
+  border-color: #38bdf8;
+}
+
+.cpoe-order-btn.order-done {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.cpoe-btn-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.done-check {
+  margin-left: auto;
+  font-size: 11px;
+  color: #4ade80;
+}
+
+.cpoe-desc {
+  font-size: 11.5px;
+  color: #94a3b8;
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+/* OSCE 復盤 Modal */
+.debrief-card {
+  width: 100%;
+  max-width: 720px;
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.debrief-header {
+  padding: 18px 22px;
+}
+
+.header-pass {
+  background: rgba(22, 163, 74, 0.25);
+  border-bottom: 1px solid #22c55e;
+}
+
+.header-warn {
+  background: rgba(220, 38, 38, 0.25);
+  border-bottom: 1px solid #ef4444;
+}
+
+.debrief-body {
+  padding: 20px 22px;
+}
+
+.debrief-checklist {
+  list-style: none;
+  margin: 12px 0 18px;
+}
+
+.debrief-checklist li {
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  font-size: 13.5px;
+}
+
+.debrief-pass {
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+}
+
+.debrief-miss {
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+}
+
+.debrief-pearl-box {
+  background: #16223be6;
+  border-left: 4px solid #fbbf24;
+  padding: 14px;
+  border-radius: 6px;
+  line-height: 1.6;
+  font-size: 13.5px;
+}
+
+.debrief-pearl-box h4 {
+  color: #fde047;
+  margin-bottom: 6px;
+}
+
+.debrief-footer {
+  padding: 14px 22px;
+  background: #09101d;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.primary-btn {
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: #334155;
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 浮動臨床提示 Toast */
+.clinical-toast {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  max-width: 480px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  z-index: 250;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.75);
+  white-space: pre-line;
+}
+
+.toast-info {
+  background: #0f172a;
+  border: 2px solid #38bdf8;
+  color: #f8fafc;
+}
+
+.toast-success {
+  background: #064e3b;
+  border: 2px solid #22c55e;
+  color: #ecfdf5;
+}
+
+.toast-danger {
+  background: #7f1d1d;
+  border: 2px solid #ef4444;
+  color: #fef2f2;
+  font-weight: 700;
+}
+
+.toast-hint {
+  background: #1e1b4b;
+  border: 2px solid #fbbf24;
+  color: #fef3c7;
+}
+
+@media (max-width: 1024px) {
+  .bs-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .cpoe-sections,
+  .ecg-pocus-wrapper,
+  .assess-grid {
+    grid-template-columns: 1fr;
+  }
+}
